@@ -532,7 +532,7 @@ class AssetsPicker {
     this.shadow.appendChild(style);
     this.shadow.appendChild(panel);
 
-    document.documentElement.appendChild(this.host);
+    document.body.appendChild(this.host);
     this.visible = true;
 
     this.bindEvents();
@@ -609,8 +609,17 @@ class AssetsPicker {
 }
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
-const picker = new AssetsPicker();
+// Guard against double-injection (executeScript on a tab that already has
+// the content script loaded via manifest).
+if (!window.__assetsPickerInit) {
+  window.__assetsPickerInit = true;
 
-chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.action === 'toggle') picker.toggle();
-});
+  const picker = new AssetsPicker();
+
+  chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+    if (msg.action === 'toggle') {
+      picker.toggle();
+      sendResponse({ ok: true }); // resolves the sendMessage promise in background.js
+    }
+  });
+}
