@@ -3,7 +3,7 @@
   "name": "AssetsPicker",
   "version": "1.0.0",
   "description": "Extract colors and typography from any website",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "scripting"],
   "background": {
     "service_worker": "background.js"
   },
