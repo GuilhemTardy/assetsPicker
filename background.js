@@ -1,11 +1,12 @@
-// When the user clicks the extension icon, toggle the floating panel.
-// If the content script isn't injected yet (tab was open before the extension
-// was loaded), inject it first then send the toggle message.
+const RESTRICTED = ['chrome://', 'chrome-extension://', 'edge://', 'about:', 'data:'];
+
 chrome.action.onClicked.addListener(async (tab) => {
+  if (!tab.url || RESTRICTED.some(p => tab.url.startsWith(p))) return;
+
   try {
     await chrome.tabs.sendMessage(tab.id, { action: 'toggle' });
   } catch {
-    // Content script missing — inject it, then toggle
+    // Tab was open before the extension loaded — inject on demand
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: ['content/content.js'],
